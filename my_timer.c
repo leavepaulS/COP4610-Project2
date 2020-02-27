@@ -1,84 +1,87 @@
-//
-//
-//
-
 #include <linux/init.h>
 #include <linux/module.h>
 #include <linux/kernel.h>
-
-#include <linux/moduleparam.h>
 #include <linux/proc_fs.h>
-#include <asm/uaccess.h>
+#include <linux/uaccess.h>
+#include <linux/time.h>
+#include <linux/slab.h>
 
-#define BUFSIZE 100
+MODULE_LICENSE("Dual BSD/GPL");
 
-MODULE_LICENSE("Daul BSD/GPL");
-MODULE_AUTHOR("Santora-Usher-Xing");
+#define BUF_LEN 100
 
-static struct proc_dir_entry *entry;
+static struct proc_dir_entry* proc_entry;
+static long time;
 
-static char msg[BUFSIZE];
+static char msg[BUF_LEN];
 static int procfs_buf_len;
-static int last_time = 0;
+static char *message1;
 
-static ssize_t my_read(struct file* file, char* ubuf, size_t count, loff_t* ppos)
+static ssize_t procfile_read(struct file* file, char * ubuf, size_t count, loff_t *ppos)
 {
-    //printk(KERN_INFO "proc_read\n");
-    procfs_buf_len = strlen(msg);
+	printk(KERN_INFO "current time: %ld\n", current_kernel_time());
+        //printf(msg,"current time: %ld\n", current_kernel_time());
+	message1 = kmalloc(sizeof(char) * 256,__GFP_RECLAIM | __GFP_IO | __GFP_FS);
+	time = current_kernel_time().tv_sec;
+	
+	sprintf(message1,"the current time: %ld\n", time);
+	procfs_buf_len = strlen(message1);
+        
+	if (*ppos > 0 || count < procfs_buf_len)
+		return 0;
 
-    if (*ppos > 0 || count < procfs_buf_len)
-        return 0;
+	if (copy_to_user(ubuf,message1, procfs_buf_len))
+		return -EFAULT;
 
-    if (copy_to_user(ubuf, msg, procfs_buf_len))
-        return -EFAULT;
+	*ppos = procfs_buf_len;
 
-    *ppos = procfs_buf_len;
+	printk(KERN_INFO "gave to user %s\n", message1);
 
-    printk(KERN_INFO "current time: %ld\n", current_kernel_time());
-    if (last_time != 0)
-        printk(KERN_INFO "elapsed time: %ld\n", current_kernel_time() - last_time);
-    int last_time = (int)current_kernel_time();
-
-    return procfs_buf_len;
+	return procfs_buf_len;
 }
 
-static ssize_t my_write(struct file* file, const char* ubuf, size_t count, loff_t* ppos)
+
+static ssize_t procfile_write(struct file* file, const char * ubuf, size_t count, loff_t* ppos)
 {
-    //printk(KERN_INFO "proc_write\n");
+	printk(KERN_INFO "proc_write\n");
 
-    if (count > BUFSIZE)
-        procfs_buf_len = BUFSIZE;
-    else
-        procfs_buf_len = count;
+	if (count > BUF_LEN)
+		procfs_buf_len = BUF_LEN;
+	else
+		procfs_buf_len = count;
 
-    copy_from_user(msg, ubuf, procfs_buf_len);
+	copy_from_user(msg, ubuf, procfs_buf_len);
 
-    //printk(KERN_INFO "%s\n", msg);
-    
-    return procfs_buf_len;
+	printk(KERN_INFO "got from user: %s\n", msg);
+
+	return procfs_buf_len;
 }
+
 
 static struct file_operations procfile_fops = {
-    .owner = THIS_MODULE,
-    .read = procfile_read,
-    .write = profile_write,
+	.owner = THIS_MODULE,
+	.read = procfile_read,
+	.write = procfile_write,
 };
 
-static int timer_init(void) //static int __init timer_init(void)
+static int hello_init(void)
 {
-    proc_entry = proc_create("timed", 0666, NULL, &procfile_fops);
+	proc_entry = proc_create("timed", 0666, NULL, &procfile_fops);
 
-    if (proc_entry == NULL)
-        return -ENOMEM;
-
-    return 0;
+	if (proc_entry == NULL)
+		return -ENOMEM;
+	
+	return 0;
 }
 
-static void timer_exit(void) //static int __exit timer_exit(void)
+static void hello_exit(void)
 {
-    proc_remove(proc_entry);
-    //return;
+	proc_remove(proc_entry);
+	return;
 }
 
-module_init(timer_init);
-module_exit(timer_eixt);
+
+
+module_init(hello_init);
+module_exit(hello_exit);
+
