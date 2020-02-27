@@ -1,7 +1,15 @@
-bj-m +=my_timer.o
+obj-m := my_timer.o
 
-all:
-        make -C /lib/modules/4.15.0-45-generic/build M=/usr/src/my_timer modules
+KERNELDIR := /lib/modules/4.15.0-45-generic/build
+
+default:
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
+
 clean:
-        make -C /lib/modules/4.15.0-45-generic/build M=/usr/src/my_timer clean
+	rm -f *.ko *.o Module* *mod*
+
+
+
+
+
 

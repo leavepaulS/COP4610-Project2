@@ -24,13 +24,22 @@ static ssize_t procfile_read(struct file* file, char * ubuf, size_t count, loff_
 	{
 		message1 = kmalloc(sizeof(char) * 256,__GFP_RECLAIM | __GFP_IO | __GFP_FS);
 		time = current_kernel_time();
-		sprintf(message1,"current time: %ld\n", time);
+		sprintf(message1,"current time: %ld.%ld\n", time.tv_sec, time.tv_nsec);
 	}
 	else
 	{
 		message1 = kmalloc(sizeof(char) * 256,__GFP_RECLAIM | __GFP_IO | __GFP_FS);
 		time2 = current_kernel_time();
-		sprintf(message1,"elapsed time: %ld.%ld\n", time2.tv_sec - time.tv_sec, time2.tv_nsec - time.tv_nsec);
+		
+		if (time2.tv_nsec - time.tv_nsec < 0)
+		{
+		
+			sprintf(message1,"current time: %ld.%ld\nelapsed time: %ld.%ld\n", time2.tv_sec, time2.tv_nsec, time2.tv_sec - time.tv_sec - 1 , time2.tv_nsec - time.tv_nsec + 1000000000);
+		}
+		else
+		{
+			sprintf(message1, "current time: %ld.%ld\nelapsed time: %ld.%ld\n", time2.tv_sec, time2.tv_nsec, time2.tv_sec - time.tv_sec, time2.tv_nsec - time.tv_nsec);
+		}
 		time = current_kernel_time();
 	}
 	++second;
