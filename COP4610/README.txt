@@ -42,16 +42,24 @@ To Compile
    > sudo make
    > sudo insmod my_timer.ko
 
- - Part 3
-   elevator.c and Makefile should be in directory /elevator
-   which is in the same directory as producer.c, consumer.c, wrappers.h and provided Makefile
+To remove *.o, *.ko, shell targets and files created by Makefile
+   make clean
 
+ - Part 3
+   elevator.c and Makefile should be in directory usr/src/elevator
+   producer.c, consumer.c, wrappers.h and provided Makefile are not in
+   usr/src/elevator
+
+   in usr/src/elevator
+   > sudo make
+
+   for producer.c, consumer.c, wrappers.h and provided Makefile
    > sudo make
    > sudo make insert
    > sudo insmod elevator.ko
    
 To remove *.o, *.ko, shell targets and files created by Makefile
-   make clean
+   make remove
 
 
 # - DIVISION OF LABOR - #
@@ -84,3 +92,13 @@ We worked almost exclusively together for the project
  with the Makefile provided to us, and we can load and unload
  the module with no issues. However, our scheduler is incomplete
  and does not accepted requests and service passengers.
+
+ - Part 3 cat proc/elevator
+   
+   At top of proc/elevator, there is a line of random characters
+ that appears most likely because of kmalloc. Does not affect anything.
+
+
+# - GIT COMMIT LOG - #
+
+ Screen shots uploaded to canvas
