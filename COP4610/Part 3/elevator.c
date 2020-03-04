@@ -23,7 +23,7 @@ static char *current_state;
 // - Elevator Linked List ------------------- //
 struct 
 {
-    char state[8];
+    char state[10];
     char animal[5];
     int current_floor;
     int passengers;
@@ -57,17 +57,19 @@ static ssize_t procfile_read(struct file* file, char * ubuf, size_t count, loff_
         // human = | , cat = o , dog = x
 
     //formating proc/elevator print out
-    sprintf(indicator, "Elevator State: %s\nElevator Animals: %s\n", state, animal);
+    sprintf(indicator, "Elevator State: %s\n", elevators.state);
     strcat(current_state, indicator);
-    sprintf(indicator, "Current Floor: %d\n", current_floor);
+    sprintf(indicator, "Elevator Animals: %s\n", elevators.animal);
     strcat(current_state, indicator);
-    sprintf(indicator, "Number of Passengers: %d\n", passengers);
+    sprintf(indicator, "Current Floor: %d\n", elevators.current_floor);
     strcat(current_state, indicator);
-    sprintf(indicator, "Current Weight: %d\n", current_weight);
+    sprintf(indicator, "Number of Passengers: %d\n", elevators.passengers);
     strcat(current_state, indicator);
-    sprintf(indicator, "Number of Passengers Waiting: %d\n", passengers_waiting);
+    sprintf(indicator, "Current Weight: %d\n", elevators.current_weight);
     strcat(current_state, indicator);
-    sprintf(indicator, "Number of Passengers Seviced: %d\n\n", serviced);
+    sprintf(indicator, "Number of Passengers Waiting: %d\n", elevators.passengers_waiting);
+    strcat(current_state, indicator);
+    sprintf(indicator, "Number of Passengers Seviced: %d\n\n", elevators.serviced);
     strcat(current_state, indicator);
 
     int i;
@@ -102,6 +104,11 @@ static int elevator_init(void)
 	if (proc_entry == NULL)
 		return -ENOMEM;
     
+    elevators.state = "OFFLINE"
+    elevators.animal = "";
+    elevators.current_floor = 1;
+    elevators.passengers = 0;
+    elevators.current_weight = 0;
     INIT_LIST_HEAD(&elevators.list);
 
 	return 0;
