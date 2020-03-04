@@ -1,6 +1,6 @@
 obj-m := elevator.o
 
-KERNELDIR := /lib/modules/4.15.0-45-generic/build
+KERNELDIR := /lib/modules/$(shell uname -r)/build
 
 default:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
