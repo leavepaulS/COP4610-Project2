@@ -36,9 +36,10 @@ struct
 
 typedef struct Elevator 
 {
-    int humans;
-    int cats;
-    int dogs;
+    int start_floor;
+    int dest_floor;
+    int num_pets;
+    int type;
     struct list_head list;
 } Elevator;
 // ------------------------------------------ //
@@ -120,11 +121,24 @@ static int elevator_init(void)
     //Linked List Initialize
     INIT_LIST_HEAD(&elevators.list);
 
+/*
+    STUB_issue_request = &(issue_request);
+    STUB_start_elevator = &(start_elevator);
+    STUB_stop_elevator = &(stop_elevator);
+*/
+
 	return 0;
 }
 static void elevator_exit(void)
 {
 	proc_remove(proc_entry);
+
+/*
+    STUB_issue_request = NULL;
+    STUB_start_elevator = NULL;
+    STUB_stop_elevator = NULL;
+*/
+    
 	return;
 }
 module_init(elevator_init);
