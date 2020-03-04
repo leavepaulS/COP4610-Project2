@@ -8,9 +8,11 @@
 
 MODULE_LICENSE("Dual BSD/GPL");
 
+//constant variables
 #define BUF_LEN 512
 #define MAX_WEIGTH 15
 
+//weight for each passenger
 #define CAT 1
 #define DOG 2
 #define HUMAN 3
@@ -18,9 +20,10 @@ MODULE_LICENSE("Dual BSD/GPL");
 static struct proc_dir_entry* proc_entry;
 static int procfs_buf_len;
 
+//string to store proc file elevator state
 static char *current_state;
 
-// - Elevator Linked List ------------------- //
+// - Elevator and Linked List --------------- //
 struct 
 {
     char state[10];
@@ -45,7 +48,8 @@ static int serviced = 0;
 
 static ssize_t procfile_read(struct file* file, char * ubuf, size_t count, loff_t *ppos)
 {
-    current_state = kmalloc(sizeof(char) * 512,__GFP_RECLAIM | __GFP_IO | __GFP_FS);
+    //floor number for print
+    int i;
 
     //temporary string
     char indicator[50];
@@ -56,7 +60,9 @@ static ssize_t procfile_read(struct file* file, char * ubuf, size_t count, loff_
     char *p_typ[10] = {"|x", "|o", "|xx", "|oo", "|", "", "|x", "|oo", "", "|xx"}; 
         // human = | , cat = o , dog = x
 
-    //formating proc/elevator print out
+    current_state = kmalloc(sizeof(char) * 512,__GFP_RECLAIM | __GFP_IO | __GFP_FS);
+
+    // - formating proc/elevator print out --------------------- //
     sprintf(indicator, "Elevator State: %s\n", elevators.state);
     strcat(current_state, indicator);
     sprintf(indicator, "Elevator Animals: %s\n", elevators.animal);
@@ -67,20 +73,20 @@ static ssize_t procfile_read(struct file* file, char * ubuf, size_t count, loff_
     strcat(current_state, indicator);
     sprintf(indicator, "Current Weight: %d\n", elevators.current_weight);
     strcat(current_state, indicator);
-    sprintf(indicator, "Number of Passengers Waiting: %d\n", elevators.passengers_waiting);
+    sprintf(indicator, "Number of Passengers Waiting: %d\n", passengers_waiting);
     strcat(current_state, indicator);
-    sprintf(indicator, "Number of Passengers Seviced: %d\n\n", elevators.serviced);
+    sprintf(indicator, "Number of Passengers Seviced: %d\n\n", serviced);
     strcat(current_state, indicator);
 
-    int i;
     for(i = 9; i >= 0; --i)
     {
         if (i == 9)
-            sprintf(indicator, "[%c] Floor %d: %d %s\n", fl_indic[i], i+1, fl_wait[i], "|");
+            sprintf(indicator, "[%c] Floor %d: %d %s\n", fl_indic[i], i+1, fl_wait[i], p_typ[i]);
         else
-            sprintf(indicator, "[%c] Floor  %d: %d %s\n", fl_indic[i], i+1, fl_wait[i], "|");
+            sprintf(indicator, "[%c] Floor  %d: %d %s\n", fl_indic[i], i+1, fl_wait[i], p_typ[i]);
         strcat(current_state, indicator);
     }
+    // --------------------------------------------------------- //
 
 	procfs_buf_len = strlen(current_state);
 	if (*ppos > 0 || count < procfs_buf_len)
@@ -104,11 +110,14 @@ static int elevator_init(void)
 	if (proc_entry == NULL)
 		return -ENOMEM;
     
-    elevators.state = "OFFLINE"
-    elevators.animal = "";
+    //elevators struct initialize
+    strcpy(elevators.state, "OFFLINE");
+    strcpy(elevators.animal, "");
     elevators.current_floor = 1;
     elevators.passengers = 0;
     elevators.current_weight = 0;
+
+    //Linked List Initialize
     INIT_LIST_HEAD(&elevators.list);
 
 	return 0;
